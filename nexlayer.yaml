@@ -1,0 +1,33 @@
+application:
+  name: humhub
+  pods:
+  - name: app
+    image: humhub/humhub:latest
+    path: /
+    servicePorts:
+    - 80
+    vars:
+      HUMHUB_DB_HOST: mysql.pod
+      HUMHUB_DB_USER: humhub
+      HUMHUB_DB_PASSWORD: humhub
+      HUMHUB_DB_NAME: humhub
+    volumes:
+    - name: humhub-uploads
+      mountPath: /var/www/localhost/htdocs/uploads
+      size: 5Gi
+    - name: humhub-protected
+      mountPath: /var/www/localhost/htdocs/protected/runtime
+      size: 2Gi
+  - name: mysql
+    image: mysql:8
+    servicePorts:
+    - 3306
+    vars:
+      MYSQL_DATABASE: humhub
+      MYSQL_USER: humhub
+      MYSQL_PASSWORD: humhub
+      MYSQL_ROOT_PASSWORD: rootpass
+    volumes:
+    - name: humhub-db
+      mountPath: /var/lib/mysql
+      size: 5Gi
