@@ -11,7 +11,7 @@ application:
       HUMHUB_DEBUG: "false"
       HUMHUB_CONFIG__COMPONENTS__DB__DSN: "mysql:host=humhub-mysql.pod;dbname=humhub"
       HUMHUB_CONFIG__COMPONENTS__DB__USERNAME: "humhub"
-      HUMHUB_CONFIG__COMPONENTS__DB__PASSWORD: "${MYSQL_PASSWORD}"
+      HUMHUB_CONFIG__COMPONENTS__DB__PASSWORD: "humhubDbPass2026"
     volumes:
     - name: humhub-data
       mountPath: /data
@@ -23,8 +23,8 @@ application:
     vars:
       MYSQL_DATABASE: humhub
       MYSQL_USER: humhub
-      MYSQL_PASSWORD: "${MYSQL_PASSWORD}"
-      MYSQL_ROOT_PASSWORD: "${MYSQL_ROOT_PASSWORD}"
+      MYSQL_PASSWORD: "humhubDbPass2026"
+      MYSQL_ROOT_PASSWORD: "humhubRootPass2026"
     volumes:
     - name: humhub-db
       mountPath: /var/lib/mysql
