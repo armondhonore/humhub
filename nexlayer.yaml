@@ -8,8 +8,8 @@ application:
     - 80
     vars:
       HUMHUB_DB_HOST: humhub-db-service
-      HUMHUB_DB_USER: humhub
-      HUMHUB_DB_PASSWORD: humhubDbPass2026
+      HUMHUB_DB_USER: root
+      HUMHUB_DB_PASSWORD: humhubRootPass2026
       HUMHUB_DB_NAME: humhub
       HUMHUB_AUTO_INSTALL: "true"
       HUMHUB_PROTO: https
@@ -25,10 +25,8 @@ application:
     - 3306
     vars:
       MARIADB_DATABASE: humhub
-      MARIADB_USER: humhub
-      MARIADB_PASSWORD: humhubDbPass2026
       MARIADB_ROOT_PASSWORD: humhubRootPass2026
     volumes:
-    - name: humhub-db
+    - name: humhub-db-v2
       mountPath: /var/lib/mysql
       size: 5Gi
