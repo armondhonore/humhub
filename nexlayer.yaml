@@ -2,7 +2,7 @@ application:
   name: humhub
   pods:
   - name: app
-    image: humhub/humhub:latest
+    image: mirror.gcr.io/humhub/humhub:latest
     path: /
     servicePorts:
     - 80
@@ -19,7 +19,7 @@ application:
       mountPath: /var/www/localhost/htdocs/protected/runtime
       size: 2Gi
   - name: mysql
-    image: mysql:8
+    image: mirror.gcr.io/library/mysql:8
     servicePorts:
     - 3306
     vars:
