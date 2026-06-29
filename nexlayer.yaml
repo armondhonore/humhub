@@ -7,7 +7,7 @@ application:
     servicePorts:
     - 80
     vars:
-      HUMHUB_DB_HOST: humhub-mysql.pod
+      HUMHUB_DB_HOST: humhub-mariadb.pod
       HUMHUB_DB_USER: humhub
       HUMHUB_DB_PASSWORD: humhubDbPass2026
       HUMHUB_DB_NAME: humhub
@@ -21,15 +21,15 @@ application:
     - name: humhub-uploads
       mountPath: /var/www/localhost/htdocs/uploads
       size: 5Gi
-  - name: humhub-mysql
-    image: mysql:8
+  - name: humhub-mariadb
+    image: mariadb:11
     servicePorts:
     - 3306
     vars:
-      MYSQL_DATABASE: humhub
-      MYSQL_USER: humhub
-      MYSQL_PASSWORD: humhubDbPass2026
-      MYSQL_ROOT_PASSWORD: humhubRootPass2026
+      MARIADB_DATABASE: humhub
+      MARIADB_USER: humhub
+      MARIADB_PASSWORD: humhubDbPass2026
+      MARIADB_ROOT_PASSWORD: humhubRootPass2026
     volumes:
     - name: humhub-db
       mountPath: /var/lib/mysql
