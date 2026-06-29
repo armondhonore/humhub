@@ -2,31 +2,29 @@ application:
   name: humhub
   pods:
   - name: app
-    image: mirror.gcr.io/humhub/humhub:latest
+    image: humhub/humhub:latest
     path: /
     servicePorts:
     - 80
     vars:
-      HUMHUB_DB_HOST: mysql.pod
-      HUMHUB_DB_USER: humhub
-      HUMHUB_DB_PASSWORD: humhub
-      HUMHUB_DB_NAME: humhub
+      SERVER_NAME: "http://relaxed-weasel-humhub.cloud.nexlayer.ai"
+      HUMHUB_DEBUG: "false"
+      HUMHUB_CONFIG__COMPONENTS__DB__DSN: "mysql:host=humhub-mysql.pod;dbname=humhub"
+      HUMHUB_CONFIG__COMPONENTS__DB__USERNAME: "humhub"
+      HUMHUB_CONFIG__COMPONENTS__DB__PASSWORD: "${MYSQL_PASSWORD}"
     volumes:
-    - name: humhub-uploads
-      mountPath: /var/www/localhost/htdocs/uploads
+    - name: humhub-data
+      mountPath: /data
       size: 5Gi
-    - name: humhub-protected
-      mountPath: /var/www/localhost/htdocs/protected/runtime
-      size: 2Gi
-  - name: mysql
-    image: mirror.gcr.io/library/mysql:8
+  - name: humhub-mysql
+    image: mysql:8
     servicePorts:
     - 3306
     vars:
       MYSQL_DATABASE: humhub
       MYSQL_USER: humhub
-      MYSQL_PASSWORD: humhub
-      MYSQL_ROOT_PASSWORD: rootpass
+      MYSQL_PASSWORD: "${MYSQL_PASSWORD}"
+      MYSQL_ROOT_PASSWORD: "${MYSQL_ROOT_PASSWORD}"
     volumes:
     - name: humhub-db
       mountPath: /var/lib/mysql
