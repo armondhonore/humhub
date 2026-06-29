@@ -11,6 +11,7 @@ application:
       HUMHUB_DB_USER: root
       HUMHUB_DB_PASSWORD: humhubRootPass2026
       HUMHUB_DB_NAME: humhub
+      HUMHUB_DB_PORT: "3306"
       HUMHUB_AUTO_INSTALL: "true"
       HUMHUB_PROTO: https
       HUMHUB_HOST: relaxed-weasel-humhub.cloud.nexlayer.ai
