@@ -17,10 +17,8 @@ application:
       HUMHUB_ADMIN_LOGIN: admin
       HUMHUB_ADMIN_EMAIL: admin@example.com
       HUMHUB_ADMIN_PASSWORD: NexlayerAdmin2026
-    volumes:
-    - name: humhub-uploads
-      mountPath: /var/www/localhost/htdocs/uploads
-      size: 5Gi
+      INTEGRITY_CHECK: "0"
+      WAIT_FOR_DB: "1"
   - name: humhub-mariadb
     image: mariadb:11
     servicePorts:
