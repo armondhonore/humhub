@@ -1,19 +1,34 @@
 application:
   name: humhub
   pods:
-  - name: app
-    image: registry.nexlayer.io/user_01kece1xyh817dwff7wnarhkxd/humhub:9f15c61-fix1
-    path: /
-    servicePorts:
-    - 80
-  - name: db
-    image: mariadb:11
-    servicePorts:
-    - 3306
-    vars:
-      MARIADB_DATABASE: humhub
-      MARIADB_ROOT_PASSWORD: humhubRootPass2026
-    volumes:
-    - name: humhub-db-v2
-      mountPath: /var/lib/mysql
-      size: 5Gi
+    - name: app
+      image: "registry.nexlayer.io/user_01kece1xyh817dwff7wnarhkxd/humhub:9f15c61-fix2"
+      path: /
+      servicePorts:
+        - 80
+      vars:
+        HUMHUB_CONFIG__COMPONENTS__DB__DSN: "mysql:host=${mysql:3306};dbname=humhub"
+        HUMHUB_CONFIG__COMPONENTS__DB__USERNAME: ${MYSQL_USER}
+        HUMHUB_CONFIG__COMPONENTS__DB__PASSWORD: ${MYSQL_PASSWORD}
+        HUMHUB_CONFIG__COMPONENTS__REDIS__HOSTNAME: "${redis:6379}"
+        HUMHUB_CONFIG__COMPONENTS__REDIS__PORT: "6379"
+    - name: mysql
+      image: mirror.gcr.io/library/mysql:8
+      path: /var/lib/mysql
+      servicePorts:
+        - 3306
+      vars:
+        MYSQL_DATABASE: humhub
+        MYSQL_USER: ${MYSQL_USER}
+        MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+        MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      volumes:
+        - name: mysql-data
+          size: 10Gi
+          mountPath: /var/lib/mysql
+    - name: redis
+      image: mirror.gcr.io/library/redis:7-alpine
+      path: /redis
+      servicePorts:
+        - 6379
+      vars: {}
