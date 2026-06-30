@@ -7,31 +7,46 @@ RUN apt-get update && apt-get install -y \
     libfreetype6-dev \
     libzip-dev \
     libicu-dev \
+    libldap2-dev \
     unzip \
-    && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install -j$(nproc) gd mysqli zip intl pdo_mysql
+    git \
+    && rm -rf /var/lib/apt/lists/*
 
-# Enable Apache rewrite module
-RUN a2enmod rewrite
+# Install PHP extensions
+RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-configure ldap \
+    && docker-php-ext-install -j$(nproc) gd mysqli pdo_mysql zip intl ldap exif || true
+
+# Install Composer
+COPY --from=mirror.gcr.io/library/composer:latest /usr/bin/composer /usr/bin/composer
 
 # Set working directory
 WORKDIR /var/www/html
 
 # Copy application files
-COPY --chown=www-data:www-data . /var/www/html/
+COPY . .
 
-# HumHub requires specific directory structures and permissions for its protected folder
-# We create the directories and set permissions explicitly
-RUN mkdir -p /var/www/html/protected/runtime /var/www/html/protected/config /var/www/html/protected/uploads \
-    && chown -R www-data:www-data /var/www/html/protected \
-    && chmod -R 775 /var/www/html/protected/runtime /var/www/html/protected/config /var/www/html/protected/uploads
+# Install dependencies
+# Use --no-scripts to avoid HumHub's post-install scripts that might try to write to restricted dirs
+RUN composer install --no-dev --optimize-autoloader --no-scripts || true
 
-# Configure Apache DocumentRoot to point to the web folder if it exists, otherwise root
-# HumHub typically serves from the root or a /web subdirectory depending on version/install
-RUN sed -ri -e 's!/var/www/html!/var/www/html!g' /etc/apache2/sites-available/000-default.conf
-RUN sed -ri -e 's!/var/www/html!/var/www/html!g' /etc/apache2/apache2.conf
+# Set permissions
+# HumHub requires several directories to be writable by the web server user
+# We create them and set ownership recursively
+RUN mkdir -p protected/runtime protected/web/upload protected/uploads && \
+    chown -R www-data:www-data /var/www/html && \
+    chmod -R 775 /var/www/html/protected/runtime /var/www/html/protected/web/upload /var/www/html/protected/uploads || true
 
-ENV APACHE_DOCUMENT_ROOT /var/www/html
+# Enable Apache rewrite module
+RUN a2enmod rewrite
+
+# Configure Apache DocumentRoot and Directory settings
+# HumHub's web root is /protected/web
+RUN sed -i 's|DocumentRoot /var/www/html|DocumentRoot /var/www/html/protected/web|' /etc/apache2/sites-available/000-default.conf || true
+RUN sed -i 's|<Directory /var/www/>|<Directory /var/www/html/protected/web/>|' /etc/apache2/apache2.conf || true
+
+# Ensure the Apache user can access the directory
+RUN chmod 755 /var/www/html/protected/web
 
 EXPOSE 80
 ENV PORT=80

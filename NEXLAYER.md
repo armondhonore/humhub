@@ -15,7 +15,7 @@
 
 ## Project Summary
 <!-- nexlayer:section agent-managed=project_summary -->
-HumHub is an open-source social network software for creating private social networks, providing a collaborative platform for communication and community building.
+HumHub is an open-source social network software designed for organizations to create their own private social platforms. It is built on the Yii PHP framework and supports modular extensions for community management.
 <!-- nexlayer:end -->
 
 ## Technology Stack
@@ -23,16 +23,14 @@ HumHub is an open-source social network software for creating private social net
 | Name | Kind | Version | Detected From |
 |------|------|---------|---------------|
 | PHP | language | 8.x | .env.example |
-| Yii Framework | framework | 2.0 | .env.example |
-| MySQL | database | latest | .env.example |
-| Redis | infra | latest | .env.example |
+| Yii | framework | 2.x | .env.example |
+| MySQL | database | 8.0 | .env.example |
+| Redis | infra | 7.0 | .env.example |
 <!-- nexlayer:end -->
 
 ## Repository Structure
 <!-- nexlayer:section agent-managed=structure_map -->
-- humhub/ — Core application files
-- config/ — System configuration
-- protected/ — Protected application logic and components
+- .env.example — Environment configuration templates for DB, Redis, and Mailer
 <!-- nexlayer:end -->
 
 ## External Services Required
@@ -71,61 +69,45 @@ HUMHUB_CONFIG__COMPONENTS__REDIS__PORT=6379
 
 ## Nexlayer Setup
 <!-- nexlayer:section agent-managed=nexlayer_setup -->
-### Pod Environment Variables
-
-| Pod | Variable | Value | Kind |
-|-----|----------|-------|------|
-| `app` | `HUMHUB_CONFIG__COMPONENTS__DB__DSN` | `"mysql:host=${mysql:3306};dbname=humhub"` | inter-pod |
-| `app` | `HUMHUB_CONFIG__COMPONENTS__DB__USERNAME` | `${MYSQL_USER}` | inter-pod |
-| `app` | `HUMHUB_CONFIG__COMPONENTS__DB__PASSWORD` | `${MYSQL_PASSWORD}` | inter-pod |
-| `app` | `HUMHUB_CONFIG__COMPONENTS__REDIS__HOSTNAME` | `"${redis:6379}"` | inter-pod |
-| `app` | `HUMHUB_CONFIG__COMPONENTS__REDIS__PORT` | `"6379"` | plain |
-| `mysql` | `MYSQL_DATABASE` | `humhub` | plain |
-| `mysql` | `MYSQL_USER` | `${MYSQL_USER}` | inter-pod |
-| `mysql` | `MYSQL_PASSWORD` | `${MYSQL_PASSWORD}` | inter-pod |
-| `mysql` | `MYSQL_ROOT_PASSWORD` | `${MYSQL_ROOT_PASSWORD}` | inter-pod |
-| `mysql-data` | `size` | `10Gi` | plain |
-| `mysql-data` | `mountPath` | `/var/lib/mysql` | plain |
-
 ### nexlayer.yaml
 
 ```yaml
 application:
   name: humhub
   pods:
-    - name: app
-      image: "registry.nexlayer.io/user_01kece1xyh817dwff7wnarhkxd/humhub:9f15c61-fix2"
+    web:
+      image: "registry.nexlayer.io/user_01kece1xyh817dwff7wnarhkxd/humhub:9f15d2a-fix5"
       path: /
+      port: 80
       servicePorts:
         - 80
-      vars:
-        HUMHUB_CONFIG__COMPONENTS__DB__DSN: "mysql:host=${mysql:3306};dbname=humhub"
-        HUMHUB_CONFIG__COMPONENTS__DB__USERNAME: ${MYSQL_USER}
-        HUMHUB_CONFIG__COMPONENTS__DB__PASSWORD: ${MYSQL_PASSWORD}
-        HUMHUB_CONFIG__COMPONENTS__REDIS__HOSTNAME: "${redis:6379}"
-        HUMHUB_CONFIG__COMPONENTS__REDIS__PORT: "6379"
-    - name: mysql
-      image: mirror.gcr.io/library/mysql:8
-      path: /var/lib/mysql
-      servicePorts:
-        - 3306
-      vars:
-        MYSQL_DATABASE: humhub
-        MYSQL_USER: ${MYSQL_USER}
-        MYSQL_PASSWORD: ${MYSQL_PASSWORD}
-        MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      volumes:
-        - name: mysql-data
-          size: 10Gi
-          mountPath: /var/lib/mysql
-    - name: redis
-      image: mirror.gcr.io/library/redis:7-alpine
-      path: /redis
-      servicePorts:
-        - 6379
-      vars: {}
+      env:
+        HUMHUB_CONFIG__COMPONENTS__DB__DSN: "mysql:host=${podName:mysql:3306};dbname=humhub"
+        HUMHUB_CONFIG__COMPONENTS__DB__USERNAME: "${env:DB_USER}"
+        HUMHUB_CONFIG__COMPONENTS__DB__PASSWORD: "${env:DB_PASSWORD}"
+        HUMHUB_CONFIG__COMPONENTS__REDIS__HOSTNAME: "${podName:redis:6379}"
+      depends_on:
+        - mysql
+        - redis
+services:
+  mysql:
+    image: mirror.gcr.io/library/mysql:8.0
+    path: /
+    port: 3306
+    servicePorts:
+      - 3306
+    env:
+      MYSQL_ROOT_PASSWORD: "${env:DB_ROOT_PASSWORD}"
+      MYSQL_DATABASE: "humhub"
+      MYSQL_USER: "${env:DB_USER}"
+      MYSQL_PASSWORD: "${env:DB_PASSWORD}"
+  redis:
+    image: mirror.gcr.io/library/redis:7.0
+    path: /
+    port: 6379
+    servicePorts:
+      - 6379
 ```
-
 <!-- nexlayer:end -->
 
 ## Nexlayer Deployment Plan
@@ -153,7 +135,7 @@ application:
 
 ## Nexlayer Configuration
 <!-- nexlayer:section agent-managed=nexlayer_config -->
-**Last deployed:** 2026-06-29T23:53:00Z  
+**Last deployed:** 2026-06-30T00:11:31Z  
 **Live URL:** https://relaxed-weasel-humhub.cloud.nexlayer.ai  
 **Runtime:**  · **Port:** auto-detected  
 **Deploy branch:** nexlayer  
@@ -162,37 +144,38 @@ application:
 application:
   name: humhub
   pods:
-    - name: app
-      image: "registry.nexlayer.io/user_01kece1xyh817dwff7wnarhkxd/humhub:9f15c61-fix2"
+    web:
+      image: "registry.nexlayer.io/user_01kece1xyh817dwff7wnarhkxd/humhub:9f15d2a-fix5"
       path: /
+      port: 80
       servicePorts:
         - 80
-      vars:
-        HUMHUB_CONFIG__COMPONENTS__DB__DSN: "mysql:host=${mysql:3306};dbname=humhub"
-        HUMHUB_CONFIG__COMPONENTS__DB__USERNAME: ${MYSQL_USER}
-        HUMHUB_CONFIG__COMPONENTS__DB__PASSWORD: ${MYSQL_PASSWORD}
-        HUMHUB_CONFIG__COMPONENTS__REDIS__HOSTNAME: "${redis:6379}"
-        HUMHUB_CONFIG__COMPONENTS__REDIS__PORT: "6379"
-    - name: mysql
-      image: mirror.gcr.io/library/mysql:8
-      path: /var/lib/mysql
-      servicePorts:
-        - 3306
-      vars:
-        MYSQL_DATABASE: humhub
-        MYSQL_USER: ${MYSQL_USER}
-        MYSQL_PASSWORD: ${MYSQL_PASSWORD}
-        MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      volumes:
-        - name: mysql-data
-          size: 10Gi
-          mountPath: /var/lib/mysql
-    - name: redis
-      image: mirror.gcr.io/library/redis:7-alpine
-      path: /redis
-      servicePorts:
-        - 6379
-      vars: {}
+      env:
+        HUMHUB_CONFIG__COMPONENTS__DB__DSN: "mysql:host=${podName:mysql:3306};dbname=humhub"
+        HUMHUB_CONFIG__COMPONENTS__DB__USERNAME: "${env:DB_USER}"
+        HUMHUB_CONFIG__COMPONENTS__DB__PASSWORD: "${env:DB_PASSWORD}"
+        HUMHUB_CONFIG__COMPONENTS__REDIS__HOSTNAME: "${podName:redis:6379}"
+      depends_on:
+        - mysql
+        - redis
+services:
+  mysql:
+    image: mirror.gcr.io/library/mysql:8.0
+    path: /
+    port: 3306
+    servicePorts:
+      - 3306
+    env:
+      MYSQL_ROOT_PASSWORD: "${env:DB_ROOT_PASSWORD}"
+      MYSQL_DATABASE: "humhub"
+      MYSQL_USER: "${env:DB_USER}"
+      MYSQL_PASSWORD: "${env:DB_PASSWORD}"
+  redis:
+    image: mirror.gcr.io/library/redis:7.0
+    path: /
+    port: 6379
+    servicePorts:
+      - 6379
 ```
 <!-- nexlayer:end -->
 
@@ -200,6 +183,7 @@ application:
 <!-- nexlayer:section agent-managed=build_history -->
 | Date | Status | Notes |
 |------|--------|-------|
-| 2026-06-29T23:45:55Z | analyzed | initial repo analysis |
-| 2026-06-29T23:53:00Z | success | deployed https://relaxed-weasel-humhub.cloud.nexlayer.ai |
+| 2026-06-29T23:59:41Z | analyzed | initial repo analysis |
+| 2026-06-30T00:11:31Z | success | deployed https://relaxed-weasel-humhub.cloud.nexlayer.ai |
 <!-- nexlayer:end -->
+
