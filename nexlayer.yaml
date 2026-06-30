@@ -2,32 +2,18 @@ application:
   name: humhub
   pods:
   - name: app
-    image: humhub/humhub:latest
+    image: registry.nexlayer.io/user_01kece1xyh817dwff7wnarhkxd/humhub:9f15c61-fix1
     path: /
     servicePorts:
     - 80
-    vars:
-      HUMHUB_DB_HOST: mysql.pod
-      HUMHUB_DB_USER: humhub
-      HUMHUB_DB_PASSWORD: humhub
-      HUMHUB_DB_NAME: humhub
-    volumes:
-    - name: humhub-uploads
-      mountPath: /var/www/localhost/htdocs/uploads
-      size: 5Gi
-    - name: humhub-protected
-      mountPath: /var/www/localhost/htdocs/protected/runtime
-      size: 2Gi
-  - name: mysql
-    image: mysql:8
+  - name: db
+    image: mariadb:11
     servicePorts:
     - 3306
     vars:
-      MYSQL_DATABASE: humhub
-      MYSQL_USER: humhub
-      MYSQL_PASSWORD: humhub
-      MYSQL_ROOT_PASSWORD: rootpass
+      MARIADB_DATABASE: humhub
+      MARIADB_ROOT_PASSWORD: humhubRootPass2026
     volumes:
-    - name: humhub-db
+    - name: humhub-db-v2
       mountPath: /var/lib/mysql
       size: 5Gi
